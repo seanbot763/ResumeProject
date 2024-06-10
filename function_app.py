@@ -10,9 +10,7 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 
 def get_table_client() -> TableClient:
-    """
-    Helper function to create and return a table client.
-    """
+
     endpoint = os.getenv("ENDPOINT")
     account_name = os.getenv("ACCOUNT_NAME")
     account_key = os.getenv("ACCOUNT_KEY")
