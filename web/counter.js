@@ -10,7 +10,7 @@ async function updateVisitorCounter() {
         document.getElementById('visitorCount').innerText = updatedCount;
         
         // Send the updated count to the Azure Function to store it
-        await postUpdatedVisitorCount(functionUrl, updatedCount);
+        await postUpdatedVisitorCount(functionUrl, updatedCount);8
 
         console.log('Visitor count updated successfully in the database.');
     } catch (error) {
@@ -45,7 +45,7 @@ async function postUpdatedVisitorCount(url, count) {
         }
         console.log('Updated visitor count posted successfully:', count);
     } catch (error) {
-        console.error('Error posting updated visitor count:', error);
+        console.error('Error sposting updated visitor count:', error);
         throw error; // Re-throw error to be handled by the caller
     }
 }
