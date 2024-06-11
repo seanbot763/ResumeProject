@@ -52,14 +52,16 @@ jobs:
       - name: Log - Dependencies installation complete
         run: echo "Dependencies are installed."
 
-      # Optional: Add step to run tests here
-      # - name: Run tests
-      #   run: echo "Tests would be executed here."
-
       - name: Validate files before zipping
         run: |
           echo "Validating files in the azure-function directory before zipping..."
-          ls -la ./azure-function
+          if [ -d "./azure-function" ]; then
+            echo "Directory './azure-function' exists. Listing contents..."
+            ls -la ./azure-function
+          else
+            echo "Error: Directory './azure-function' does not exist."
+            exit 1
+          fi
 
       - name: Zip artifact for deployment
         run: |
@@ -111,7 +113,13 @@ jobs:
       - name: Validate files in deploy directory
         run: |
           echo "Validating files in the deploy directory..."
-          ls -la ./deploy/azure-function
+          if [ -d "./deploy/azure-function" ]; then
+            echo "Directory './deploy/azure-function' exists. Listing contents..."
+            ls -la ./deploy/azure-function
+          else
+            echo "Error: Directory './deploy/azure-function' does not exist."
+            exit 1
+          fi
 
       - name: Login to Azure using Service Principal
         uses: azure/login@v1
@@ -127,14 +135,4 @@ jobs:
           app-name: 'counterfunctionapi'
           slot-name: 'Production'
           package: ./deploy/azure-function
-          scm-do-build-during-deployment: true
-          enable-oryx-build: true
-
-      - name: Log - Deployment status
-        run: echo "Deployment to Azure Functions completed."
-
-      - name: Validate Azure deployment
-        run: |
-          echo "Validating deployment on Azure..."
-          az functionapp list --query "[?name=='counterfunctionapi']" # Check if the app exists
-          echo "Deployment validation complete."
+     
