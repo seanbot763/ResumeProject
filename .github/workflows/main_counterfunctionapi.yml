@@ -128,7 +128,7 @@ jobs:
         run: |
           echo "Deploying to Azure Functions..."
           az functionapp deployment source config-zip \
-            --resource-group 'YourResourceGroup' \
+            --resource-group 'CloudChallenge' \
             --name 'counterfunctionapi' \
             --src ./deploy/release.zip
         env:
