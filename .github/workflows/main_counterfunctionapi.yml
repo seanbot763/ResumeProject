@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: './azure-function' # Path to your web app project
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './azure-function' # Path to your Azure Function project
   PYTHON_VERSION: '3.10' # Python version to use
 
 jobs:
@@ -86,10 +86,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-function.outputs.webapp-url }}
-
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
@@ -128,11 +124,22 @@ jobs:
       - name: Log - Logged into Azure
         run: echo "Logged into Azure with Service Principal."
 
-      - name: 'Deploy to Azure Functions'
-        uses: Azure/functions-action@v1
-        id: deploy-to-function
-        with:
-          app-name: 'counterfunctionapi'
-          slot-name: 'Production'
-          package: ./deploy/azure-function
-     
+      - name: Deploy to Azure Functions
+        run: |
+          echo "Deploying to Azure Functions..."
+          az functionapp deployment source config-zip \
+            --resource-group 'YourResourceGroup' \
+            --name 'counterfunctionapi' \
+            --src ./deploy/release.zip
+        env:
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_RESOURCE_GROUP: 'CloudChallenge'
+          AZURE_FUNCTIONAPP_NAME: 'counterfunctionapi'
+
+      - name: Log - Deployment status
+        run: echo "Deployment to Azure Functions completed."
+
+      - name: Validate Azure deployment
+        run: |
+          echo "Validating deployment on Azure..."
+          az functionapp show --resource-group 'YourResourceGroup' --name 'counterfunctionapi' --query "{State:state, DefaultHostName:defaultHostName}" --output table
