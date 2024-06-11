@@ -1,5 +1,4 @@
 async function updateVisitorCounter() {
-    // URL of the Azure Function that handles the visitor count
     const functionUrl = 'https://visitorcounterapi.azurewebsites.net/api/VisitorCounterFunction';
 
     try {
