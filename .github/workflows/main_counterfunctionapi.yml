@@ -16,24 +16,60 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for tags and branches
+      - name: Log - Checking out repository
+        run: echo "Checked out repository. Listing files..."
+      - name: List files in repository
+        run: ls -la
 
       - name: Setup Python version
         uses: actions/setup-python@v1
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - name: Log - Python version setup
+        run: python --version
 
       - name: Create and start virtual environment
         run: |
+          echo "Creating virtual environment..."
           python -m venv venv
+          echo "Activating virtual environment..."
           source venv/bin/activate
+          echo "Virtual environment created and activated. Listing environment..."
+          ls -la venv
+
+      - name: Log - Virtual environment created
+        run: echo "Virtual environment is ready."
 
       - name: Install dependencies
-        run: pip install -r ./azure-function/requirements.txt
+        run: |
+          echo "Installing dependencies from requirements.txt..."
+          pip install -r ./azure-function/requirements.txt
+          echo "Dependencies installed. Listing installed packages..."
+          pip list
+
+      - name: Log - Dependencies installation complete
+        run: echo "Dependencies are installed."
 
       # Optional: Add step to run tests here
+      # - name: Run tests
+      #   run: echo "Tests would be executed here."
+
+      - name: Validate files before zipping
+        run: |
+          echo "Validating files in the azure-function directory before zipping..."
+          ls -la ./azure-function
 
       - name: Zip artifact for deployment
-        run: zip -r release.zip ./azure-function # Specify the directory to zip
+        run: |
+          echo "Creating zip package for deployment..."
+          zip -r release.zip ./azure-function
+          echo "Zip package created. Listing contents..."
+          unzip -l release.zip
+
+      - name: Log - Artifact zipped
+        run: echo "Artifact zipped and ready for upload."
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
@@ -42,6 +78,8 @@ jobs:
           path: |
             release.zip
             !venv/
+      - name: Log - Artifact uploaded
+        run: echo "Artifact uploaded for deployment job."
 
   deploy:
     runs-on: ubuntu-latest
@@ -55,14 +93,32 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: python-app
+      - name: Log - Artifact downloaded
+        run: echo "Artifact downloaded from build job. Listing files..."
+      - name: List downloaded files
+        run: ls -la
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip -d ./deploy # Unzip to a temporary directory for deployment
+        run: |
+          echo "Unzipping artifact for deployment..."
+          unzip release.zip -d ./deploy
+          echo "Artifact unzipped to ./deploy. Listing contents..."
+          ls -la ./deploy
+
+      - name: Log - Artifact unzipped
+        run: echo "Artifact unzipped and ready for deployment."
+
+      - name: Validate files in deploy directory
+        run: |
+          echo "Validating files in the deploy directory..."
+          ls -la ./deploy/azure-function
 
       - name: Login to Azure using Service Principal
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }} # Use the combined credentials secret
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Log - Logged into Azure
+        run: echo "Logged into Azure with Service Principal."
 
       - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
@@ -70,6 +126,15 @@ jobs:
         with:
           app-name: 'counterfunctionapi'
           slot-name: 'Production'
-          package: ./deploy/azure-function # Path to the unzipped function app files
+          package: ./deploy/azure-function
           scm-do-build-during-deployment: true
           enable-oryx-build: true
+
+      - name: Log - Deployment status
+        run: echo "Deployment to Azure Functions completed."
+
+      - name: Validate Azure deployment
+        run: |
+          echo "Validating deployment on Azure..."
+          az functionapp list --query "[?name=='counterfunctionapi']" # Check if the app exists
+          echo "Deployment validation complete."
