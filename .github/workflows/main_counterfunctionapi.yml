@@ -135,7 +135,14 @@ jobs:
       - name: Log - Deployment status
         run: echo "Deployment to Azure Functions completed."
 
-      - name: Validate Azure Function status via HTTP endpoint
+      - name: List functions to debug
+        run: |
+          echo "Listing all functions in the Azure Function App..."
+          az functionapp function list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_FUNCTIONAPP_NAME }} --output table
+          echo "Raw JSON output for function list (for detailed inspection):"
+          az functionapp function list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_FUNCTIONAPP_NAME }} --output jsonc
+
+      - name: Validate function status via HTTP endpoint
         run: |
           echo "Validating function status via HTTP endpoint..."
           FUNCTION_URL=$(az functionapp function show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_FUNCTIONAPP_NAME }} --function-name 'function_app' --query "invokeUrlTemplate" --output tsv)
@@ -150,6 +157,3 @@ jobs:
             echo "Error: Function did not respond with status code 200."
             exit 1
           fi
-
-      - name: Log - Function validation complete
-        run: echo "Function validation complete. The function is responding correctly."
