@@ -45,7 +45,7 @@ async function postUpdatedVisitorCount(url, count) {
         }
         console.log('Updated visitor count posted successfully:', count);
     } catch (error) {
-        console.error('Error sposting updated visitor count:', error);
+        console.error('Errosr sposting updated visitor count:', error);
         throw error; // Re-throw error to be handled by the caller
     }
 }
