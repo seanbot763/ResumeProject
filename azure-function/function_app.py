@@ -45,9 +45,7 @@ def visitor_counter_function(req: func.HttpRequest) -> func.HttpResponse:
 
 
 def handle_get_request(table_client: TableClient) -> func.HttpResponse:
-    """
-    Handles the GET request to retrieve the current visitor count.
-    """
+
     try:
         entity = table_client.get_entity(
             partition_key="visitorData", row_key="count")
