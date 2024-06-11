@@ -63,9 +63,7 @@ def handle_get_request(table_client: TableClient) -> func.HttpResponse:
 
 
 def handle_post_request(req: func.HttpRequest, table_client: TableClient) -> func.HttpResponse:
-    """
-    Handles the POST request to update the visitor count.
-    """
+
     try:
         req_body = req.get_json()
         visitor_count = req_body.get('count')
