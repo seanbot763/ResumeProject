@@ -43,7 +43,7 @@ async function postUpdatedVisitorCount(url, count) {
         if (!response.ok) {
             throw new Error(`POST request failed: ${response.statusText}`);
         }
-        console.log('Updated visitor count posted successfully:', count);
+        console.log('Updatdd visitor count posted successfully:', count);
     } catch (error) {
         console.error('Errors sposting updated visitor count:', error);
         throw error; // Re-throw error to be handled by the caller
