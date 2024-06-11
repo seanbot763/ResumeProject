@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'azure-function' # Set this to the path to your web app project
-  PYTHON_VERSION: '3.10' # Set this to the Python version to use
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: './azure-function' # Path to your web app project
+  PYTHON_VERSION: '3.10' # Python version to use
 
 jobs:
   build:
@@ -28,12 +28,12 @@ jobs:
           source venv/bin/activate
 
       - name: Install dependencies
-        run: pip install -r azure-function/requirements.txt
+        run: pip install -r ./azure-function/requirements.txt
 
       # Optional: Add step to run tests here
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: zip -r release.zip ./azure-function # Specify the directory to zip
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
@@ -57,12 +57,12 @@ jobs:
           name: python-app
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip     
+        run: unzip release.zip -d ./deploy # Unzip to a temporary directory for deployment
 
       - name: Login to Azure using Service Principal
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }} # Using the combined credentials secret
+          creds: ${{ secrets.AZURE_CREDENTIALS }} # Use the combined credentials secret
 
       - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
@@ -70,6 +70,6 @@ jobs:
         with:
           app-name: 'counterfunctionapi'
           slot-name: 'Production'
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          package: ./deploy/azure-function # Path to the unzipped function app files
           scm-do-build-during-deployment: true
           enable-oryx-build: true
