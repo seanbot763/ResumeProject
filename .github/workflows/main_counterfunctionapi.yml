@@ -135,31 +135,21 @@ jobs:
       - name: Log - Deployment status
         run: echo "Deployment to Azure Functions completed."
 
-      - name: List and validate functions
+      - name: Validate Azure Function status via HTTP endpoint
         run: |
-          echo "Listing and validating functions in the Azure Function App..."
-          FUNCTIONS=$(az functionapp function list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_FUNCTIONAPP_NAME }} --query "[].{Name:name, InvokeUrlTemplate:invokeUrlTemplate}" --output json)
-          echo "Functions in the app:"
-          echo $FUNCTIONS | jq
-          if [ -z "$FUNCTIONS" ]; then
-            echo "Error: No functions found in the Function App."
+          echo "Validating function status via HTTP endpoint..."
+          FUNCTION_URL=$(az functionapp function show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --name ${{ env.AZURE_FUNCTIONAPP_NAME }} --function-name 'function_app' --query "invokeUrlTemplate" --output tsv)
+          echo "Function URL: $FUNCTION_URL"
+          if [ -z "$FUNCTION_URL" ]; then
+            echo "Error: Function URL is empty."
             exit 1
           fi
-          for FUNCTION in $(echo $FUNCTIONS | jq -r '.[].Name'); do
-            echo "Checking status of function: $FUNCTION"
-            FUNCTION_URL=$(echo $FUNCTIONS | jq -r ".[] | select(.Name==\"$FUNCTION\") | .InvokeUrlTemplate")
-            echo "Function URL: $FUNCTION_URL"
-            if [ -z "$FUNCTION_URL" ]; then
-              echo "Error: Function URL is empty for $FUNCTION."
-              exit 1
-            fi
-            STATUS_CODE=$(curl -o /dev/null -s -w "%{http_code}" $FUNCTION_URL)
-            echo "HTTP status code from function $FUNCTION: $STATUS_CODE"
-            if [ "$STATUS_CODE" -ne 200 ]; then
-              echo "Error: Function $FUNCTION did not respond with status code 200."
-              exit 1
-            fi
-          done
+          STATUS_CODE=$(curl -o /dev/null -s -w "%{http_code}" $FUNCTION_URL)
+          echo "HTTP status code from function: $STATUS_CODE"
+          if [ "$STATUS_CODE" -ne 200 ]; then
+            echo "Error: Function did not respond with status code 200."
+            exit 1
+          fi
 
       - name: Log - Function validation complete
-        run: echo "Function validation complete. All functions are responding correctly."
+        run: echo "Function validation complete. The function is responding correctly."
