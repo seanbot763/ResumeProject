@@ -82,7 +82,7 @@ def handle_post_request(req: func.HttpRequest, table_client: TableClient) -> fun
         logging.info(
             f"Visitor count {visitor_count} stored successfully in the table.")
 
-        return func.HttpResponse("TESTss count stored successfully!", status_code=200)
+        return func.HttpResponse("Test count stored successfully!", status_code=200)
 
     except HttpResponseError as e:
         logging.error(f"Errors updating visitor count in Table Storage: {e}")
